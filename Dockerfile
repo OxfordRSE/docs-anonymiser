@@ -8,14 +8,15 @@ ENV TESSERACT_VERSION=3.05.00
 
 RUN mkdir -p /usr/share/man/man1
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y imagemagick gcc g++ libsm6 openjdk-8-jre-headless curl unzip
+RUN apt-get install -y imagemagick gcc g++ libsm6 openjdk-8-jre-headless curl unzip python3-tk
 RUN apt-get install -y autoconf automake libleptonica-dev libtool libpango1.0-dev libicu-dev libcairo2-dev
 RUN apt-get clean
 RUN apt-get autoclean
 RUN apt-get autoremove
 RUN rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir spacy
+RUN pip install --upgrade pip 
+RUN pip install --no-cache-dir spacy==2.0.10
 RUN python -m spacy download en
 RUN pip install --no-cache-dir -r requirements.txt
 
