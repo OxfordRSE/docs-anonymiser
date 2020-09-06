@@ -37,11 +37,11 @@ host_dir=$(realpath $DIR)
 workdir="/docs-anonymiser"
 echo "Creating anonymised files in: $host_dir/Anonymised"
 
-image_name="docs-anonymiser"
+image_name="oxrse/docs-anonymiser"
 release=$(curl -s https://api.github.com/repos/OxfordRSE/docs-anonymiser/releases/latest |grep tag_name |cut -d \" -f 4)
 
 corenlp_command="cd /stanford-corenlp-full-2017-06-09 && nohup java -mx4g -cp \"*\" edu.stanford.nlp.pipeline.StanfordCoreNLPServer &"
-anonymiser_command="python3 /usr/local/bin/anonymise.py $workdir $SKEWNESS"
+anonymiser_command="anonymise.py $workdir $SKEWNESS"
 
 sudo -n docker run --rm -i \
   -v $host_dir:$workdir:Z \

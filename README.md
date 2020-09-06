@@ -6,10 +6,6 @@
 
 ## To run
 
-Create docker image
-
-`docker build --tag docs-anonymiser .`
-
 For PDFs that have been digitally generated, place all PDFs in a folder and run
 
 `./docs-anonymiser.sh -d folder_path`
