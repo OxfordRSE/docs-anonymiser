@@ -1,8 +1,5 @@
 FROM python:3.6-slim-stretch
 
-ADD src/requirements.txt requirements.txt
-ADD src/anonymise.py /usr/local/bin/anonymise.py
-
 ENV CORENLP_VERSION=2017-06-09
 ENV TESSERACT_VERSION=3.05.00
 
@@ -18,6 +15,8 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN pip install --upgrade pip 
 RUN pip install --no-cache-dir spacy==2.0.10
 RUN python -m spacy download en
+
+COPY src/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN curl -LO http://nlp.stanford.edu/software/stanford-corenlp-full-${CORENLP_VERSION}.zip
@@ -38,5 +37,8 @@ RUN rm -rf /tesseract-${TESSERACT_VERSION}
 
 RUN cd /usr/local/share/tessdata && \
     curl -LO https://github.com/tesseract-ocr/tessdata/raw/master/eng.traineddata
+
+COPY src/anonymise.py /usr/local/bin/anonymise.py
+COPY policy.xml /etc/ImageMagick-6/policy.xml
 
 WORKDIR /docs-anonymiser

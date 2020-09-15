@@ -117,50 +117,24 @@ def templates(term):
 def find_names(filename, rot_fl=0, blur=0):
     # load the example image and convert it to grayscale
 
-    image_pdf = Image(filename=filename, resolution=300)
-
-    image_jpeg = image_pdf.convert('jpeg')
-
     req_image = []
     conv_img_list = []
     gray_list = []
     search_terms = []
-    search_terms_sp = []
     doc_text = ''
-    fin_terms = ['Address', 'Administration', 'Age', 'Agree', 'Agreement', 'Allowance',
-                 'Analysis', 'Annual', 'Approx', 'Assurance', 'Authority', 'Authorisation',
-                 'Balanced', 'Bank', 'Benefit', 'Birth', 'Budget', 'Business',
-                 'Capita', 'Capital', 'Capitalised', 'Cash', 'Centre', 'Charge', 'Choice', 'Civil',
-                 'Commencement', 'Comparison', 'Conclusion', 'Condition', 'Confident', 'Confidential',
-                 'Confirmation', 'Consumer', 'Contribution', 'Control', 'Critical', 'Customs',
-                 'Data', 'Date', 'Death', 'Deed', 'Definition', 'Department', 'Detail', 'Direct', 'Disagree',
-                 'Discretionary', 'Discuss', 'Employment', 'Emerging', 'Entitlement', 'Equity', 'European',
-                 'Fact', 'FAQ', 'Feature', 'Fee', 'File', 'Final', 'Financial',
-                 'Flexibility', 'Forename', 'Free', 'Full', 'Fund',
-                 'General', 'Government', 'Growth', 'Guide', 'Health',
-                 'Income', 'Increase', 'Identified', 'Index', 'Industry', 'Information', 'Insignificant',
-                 'Insurance', 'Interest', 'International', 'Investment', 'Investor',
-                 'Legal', 'Life', 'Lifetime', 'Limited', 'Lower', 'Lump',
-                 'Marital', 'Member', 'Membership', 'Mobile', 'Money', 'Mutual', 'National', 'Nominated',
-                 'Normal', 'Note', 'Number', 'Offer', 'Office', 'Ongoing',
-                 'Option', 'Outcome', 'Partnership', 'Paying', 'Pension', 'Percentage', 'Period', 'Personal',
-                 'Phone', 'Please', 'Portfolio', 'Post', 'Price', 'Profile', 'Protection', 'Purchase',
-                 'Rate', 'Reason', 'Recommendation', 'Reduce', 'Reduction', 'Reference',
-                 'Register', 'Registered', 'Regulation', 'Regulator', 'Report',
-                 'Research', 'Request', 'Result', 'Retail', 'Retirement', 'Revenue', 'Risk',
-                 'Salary', 'Saving', 'Scheme', 'Section', 'Service', 'Solution', 'Spouse', 'Stakeholder',
-                 'State', 'Statement', 'Statistics', 'Status', 'Subject', 'Sum', 'Summary', 'Support', 'Surname',
-                 'Tax', 'Taxation', 'Tel', 'Telephone', 'Total', 'Transfer',
-                 'Trust', 'Trustee', 'Type', 'Typical', 'Typically',
-                 'Unauthorised', 'Unit', 'Value', 'Version', 'Wealth', 'Yield', 'Your', 'Yours']
 
-    for img in image_jpeg.sequence:
-        img_page = Image(image=img)
-        img_page.background_color = Color('white')
-        img_page.alpha_channel = 'remove'
-        req_image.append(img_page.make_blob('jpeg'))
+    with Image(filename=filename, resolution=300) as image_jpeg:
+        image_jpeg.compression_quality = 99
+        image_jpeg = image_jpeg.convert('jpeg')
 
-    for img in req_image:
+        for img in image_jpeg.sequence:
+            with Image(image=img) as img_page:
+                img_page.background_color = Color('white')
+                img_page.alpha_channel = 'remove'
+                req_image.append(img_page.make_blob('jpeg'))
+    image_jpeg.destroy()
+
+    for index, img in enumerate(req_image):
         # txt = pytesseract.image_to_string(PI.open(io.BytesIO(img)))
         conv_img = PI.open(io.BytesIO(img))
         conv_img = np.asarray(conv_img, dtype=np.uint8)
@@ -183,71 +157,44 @@ def find_names(filename, rot_fl=0, blur=0):
         M = cv2.getRotationMatrix2D((cols / 2, rows / 2), 90 - rot, 1)
         gray = cv2.warpAffine(gray, M, (cols, rows))
         conv_img = cv2.warpAffine(conv_img, M, (cols, rows))
-        page_text = pytesseract.image_to_string(gray, config='--psm 4 -c textord_heavy_nr=1')
-        print(page_text)
+        # page_text = pytesseract.image_to_string(gray, config='--psm 11 -c textord_heavy_nr=1')
+        # print(page_text)
 
-        doc_text = doc_text + page_text
+        #doc_text = doc_text + page_text
 
         conv_img_list.append(conv_img)
         gray_list.append(gray)
+        # cv2.imwrite(filename + str(index) + '.jpg', gray)
 
         # NLP analysis
-        nlp_result = ner_extraction(page_text)
+        #nlp_result = ner_extraction(page_text)
 
-        nlp_result_sp = nlp_sp(page_text)
-        labels = set([w.label_ for w in nlp_result_sp.ents])
-        in_labels = ['PERSON', 'ORG', 'GPE', 'LOC', 'FAC']
+        #nlp_result_sp = nlp_sp(page_text)
+        #labels = set([w.label_ for w in nlp_result_sp.ents])
+        #in_labels = ['PERSON', 'ORG', 'GPE', 'LOC', 'FAC']
 
-        others =[]
+        #others =[]
 
-        for sen in nlp_result["sentences"]:
-            for tok in sen['tokens']:
-                #print(tok)
-                if tok['ner'] == 'PERSON' or tok['ner'] == 'LOCATION' or tok['ner'] == 'ORGANIZATION' or tok[
-                        'ner'] == 'MISC':
-                    if tok["word"] not in search_terms and len(tok["word"]) > 1 and tok["word"] not in fin_terms \
-                            and not tok["word"].islower():
-                        search_terms.append(tok["word"])
+        #found_name = False
+        #for sen in nlp_result["sentences"]:
+        #    for tok in sen['tokens']:
+        #        print('Stanford tok', tok)
+        #        if tok['ner'] == 'PERSON' and not found_name and tok["word"] not in search_terms:
+        #            print('Name:', tok["word"])
+        #            search_terms.append(tok["word"])
 
-                if tok['ner'] == 'O':
-                    others.append(tok["word"])
-                # Find emails, NINs and phone numbers
-                if templates(tok["word"]):
-                    search_terms.append(tok["word"])
+        #print('after 1st', search_terms)
+
+        #for tok in nlp_result_sp:
+        #    print('spacy tok', tok.text, tok.lemma_, tok.pos_, tok.tag_)
+        #    if tok.tag == 'PRP' and tok.text not in search_terms:
+        #        print('PRP:', tok.text)
+
+        #for ent in nlp_result_sp.ents:
+        #    print('spacy ent', ent.text, ent.label_)
 
 
-        for label in labels:
-            if label in in_labels:
-                entities = [cleanup(e.string, lower=False) for e in nlp_result_sp.ents if label == e.label_]
-                entities = list(set(entities))
-                #print(label, entities)
-
-                for ent in entities:
-                    wds_list = re.split(' |\n', ent)
-                    for wd in wds_list:
-                        if wd not in search_terms and wd not in search_terms_sp and len(wd) > 1 and wd in others and not wd.islower():
-                            search_terms_sp.append(wd)
-
-    search_terms1 = []
-
-    for term in search_terms_sp:
-# and term.lower() not in doc_text
-        if term not in fin_terms and term[:-1] not in fin_terms:
-
-                    search_terms1.append(term)
-        else:
-            if templates(term):
-                search_terms1.append(term)
-
-    #tel = re.search("^(\+44\s?\d{4}|\(?0\d{4}\)?)\s?\d{3}\s?\d{3}$", doc_text)
-    #print(tel)
-
-    search_terms = search_terms + search_terms1
-    print(search_terms)
-    #Save search terms
-    #text_file = open(filename[:-4] + 'terms.txt', "w")
-    #text_file.write("%s" % search_terms1)
-    #text_file.close()
+    print('SEARCH TERMS:', search_terms)
 
     return search_terms, conv_img_list, gray_list
 
@@ -257,10 +204,11 @@ def draw_boxes(search_terms, conv_img_list, gray_list, dir, filename):
     pp = PdfPages(out_file)
 
     for ind in range(len(conv_img_list)):
+        print('processing page', ind)
         conv_img = conv_img_list[ind]
         gray = gray_list[ind]
 
-        boxes = pytesseract.image_to_data(gray, config='--psm 4 -c textord_heavy_nr=1')
+        boxes = pytesseract.image_to_data(gray, config='--psm 12 -c textord_heavy_nr=1')
         # -c "textord_heavy_nr"=1 -c "textord_space_size_is_variable"=1
         #print(boxes)
         lines = boxes.split('\n')
@@ -269,30 +217,16 @@ def draw_boxes(search_terms, conv_img_list, gray_list, dir, filename):
 
         for i in range(len(lines)):
             if len(words[i]) == 12:
-                if (words[i][11] in search_terms):
+                if (words[i][11].lower() in search_terms):
                     conv_img = blank_word(words[i], conv_img)
 
-                if words[i][11] in ['Phone', 'Phone:', 'Telephone', 'Telephone:', 'Tel:', 'Tel.:']:
-                    for w in range(5):
-                        if any(char.isdigit() for char in words[i+w][11]):
-                            conv_img = blank_word(words[i+w], conv_img)
+                if words[i][11].lower() in ['man', 'woman']:
+                    conv_img = blank_word(words[i], conv_img)
 
-                if words[i][11] in ['Street', 'Drive', 'Road', 'Place', 'Close', 'Terrace']:
-                    conv_img = blank_word(words[i-1], conv_img)
+                if words[i][11].lower() in ['ms', 'miss', 'mrs', 'mr']:
+                    conv_img = blank_word(words[i], conv_img)
 
-                if (words[i][11] in ['D.o.B.', 'D.o.B', 'Birth', 'B',
-                                                             'D.o.B.:', 'D.o.B:', 'Birth:', 'DoB', 'DoB:']):
-                    for w in range(5):
-                        if any(char.isdigit() for char in words[i+w][11]):
-                            if len(words[i+w][11]) > 5:
-                                char_w = int(words[i+w][8]) / len(words[i+w][11])
-                                excl = int(2*char_w) + 5
-                                conv_img = blank_word(words[i+w], conv_img, excl)
-                            else:
-                                conv_img = blank_word(words[i + w], conv_img)
-                                conv_img = blank_word(words[i + w + 1], conv_img)
-
-                if templates(words[i][11]):
+                if words[i][11].lower() in ['she', 'her', 'hers', 'he', 'him', 'his']:
                     conv_img = blank_word(words[i], conv_img)
 
         imgplot = plt.figure(figsize=(8.27, 11.69), dpi=300)
@@ -304,6 +238,7 @@ def draw_boxes(search_terms, conv_img_list, gray_list, dir, filename):
         ax.set_xticks([])
         ax.set_yticks([])
         pp.savefig()
+        plt.close(imgplot)
 
         # cv2.imwrite("/Users/violetakovacheva/Documents/Annonimise_Samples/test.png", np.array(conv_img, dtype=np.uint8))
         #cv2.imshow("Output", gray)
@@ -334,5 +269,11 @@ if not os.path.exists(outdir):
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
     if filename.endswith(".pdf"):
+        print('processing file', filename)
         [search_terms, conv_img_list, gray_list] = find_names(os.path.join(args.dir, filename), args.skew, args.blur)
+        names = filename.split(" - Application")[0].split(" ")
+        names = [n.replace(',', '').lower() for n in names]
+        names_possessive = [n + "'s" for n in names]
+        print('NAMES:', names)
+        search_terms = search_terms + names + names_possessive
         draw_boxes(search_terms, conv_img_list, gray_list, outdir, filename)
