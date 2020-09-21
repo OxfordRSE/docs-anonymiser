@@ -157,8 +157,8 @@ def find_names(filename, rot_fl=0, blur=0):
         M = cv2.getRotationMatrix2D((cols / 2, rows / 2), 90 - rot, 1)
         gray = cv2.warpAffine(gray, M, (cols, rows))
         conv_img = cv2.warpAffine(conv_img, M, (cols, rows))
-        # page_text = pytesseract.image_to_string(gray, config='--psm 11 -c textord_heavy_nr=1')
-        # print(page_text)
+        #page_text = pytesseract.image_to_string(gray, config='--psm 12 --oem 1 -c textord_heavy_nr=1')
+        #print(page_text)
 
         #doc_text = doc_text + page_text
 
@@ -208,7 +208,7 @@ def draw_boxes(search_terms, conv_img_list, gray_list, dir, filename):
         conv_img = conv_img_list[ind]
         gray = gray_list[ind]
 
-        boxes = pytesseract.image_to_data(gray, config='--psm 12 -c textord_heavy_nr=1')
+        boxes = pytesseract.image_to_data(gray, config='--psm 12 --oem 1 -c textord_heavy_nr=1')
         # -c "textord_heavy_nr"=1 -c "textord_space_size_is_variable"=1
         #print(boxes)
         lines = boxes.split('\n')
@@ -273,7 +273,7 @@ for file in os.listdir(directory):
         [search_terms, conv_img_list, gray_list] = find_names(os.path.join(args.dir, filename), args.skew, args.blur)
         names = filename.split(" - Application")[0].split(" ")
         names = [n.replace(',', '').lower() for n in names]
-        names_possessive = [n + "'s" for n in names]
-        print('NAMES:', names)
+        names_possessive = [n + "’s" for n in names]
         search_terms = search_terms + names + names_possessive
+        print('SEACH TERMS:', search_terms)
         draw_boxes(search_terms, conv_img_list, gray_list, outdir, filename)

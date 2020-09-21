@@ -1,7 +1,7 @@
 FROM python:3.6-slim-stretch
 
 ENV CORENLP_VERSION=2017-06-09
-ENV TESSERACT_VERSION=3.05.00
+ENV TESSERACT_VERSION=4.1.1
 
 RUN mkdir -p /usr/share/man/man1
 RUN apt-get update && apt-get upgrade -y
