@@ -10,6 +10,7 @@ import cv2
 import re
 import os
 import sys
+import unidecode
 import numpy as np
 from skimage.transform import radon
 from skimage.morphology import disk, closing
@@ -214,20 +215,29 @@ def draw_boxes(search_terms, conv_img_list, gray_list, dir, filename):
         lines = boxes.split('\n')
         words = [x.split('\t') for x in lines]
 
+        page_text = ''
 
         for i in range(len(lines)):
             if len(words[i]) == 12:
-                if (words[i][11].lower() in search_terms):
+                word = unidecode.unidecode(words[i][11]).lower()
+                page_text = page_text + ' ' + words[i][11]
+                for search_term in search_terms:
+                    if search_term in word:
+                        conv_img = blank_word(words[i], conv_img)
+
+                if word in ['man', 'woman']:
                     conv_img = blank_word(words[i], conv_img)
 
-                if words[i][11].lower() in ['man', 'woman']:
+                if word in ['ms', 'miss', 'mrs', 'mr']:
                     conv_img = blank_word(words[i], conv_img)
 
-                if words[i][11].lower() in ['ms', 'miss', 'mrs', 'mr']:
+                if word in ['ms.', 'miss.', 'mrs.', 'mr.']:
                     conv_img = blank_word(words[i], conv_img)
 
-                if words[i][11].lower() in ['she', 'her', 'hers', 'he', 'him', 'his']:
+                if word in ['she', 'her', 'hers', 'he', 'him', 'his']:
                     conv_img = blank_word(words[i], conv_img)
+
+        print(page_text)
 
         imgplot = plt.figure(figsize=(8.27, 11.69), dpi=300)
         ax = imgplot.add_axes([0.0, 0.0, 1.0, 1.0], frameon=False, aspect=1)
@@ -273,7 +283,6 @@ for file in os.listdir(directory):
         [search_terms, conv_img_list, gray_list] = find_names(os.path.join(args.dir, filename), args.skew, args.blur)
         names = filename.split(" - Application")[0].split(" ")
         names = [n.replace(',', '').lower() for n in names]
-        names_possessive = [n + "’s" for n in names]
-        search_terms = search_terms + names + names_possessive
+        search_terms = search_terms + names
         print('SEACH TERMS:', search_terms)
         draw_boxes(search_terms, conv_img_list, gray_list, outdir, filename)
